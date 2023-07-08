@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
@@ -49,27 +50,38 @@ Would you like to download it now?", "Upgrade", MessageBoxButtons.YesNo, Message
 
         public void MigrateToLast()
         {
-            var migration = DbScope.GetLastMigration();
-            var migrationId = migration.MigrationId;
-            var pendingMigrations = migrationId != "000000000000"
-                ? History.SkipWhile(pair => pair.Key.MigrationId != migrationId).Skip(1)
+            var last = DbScope.GetLastMigration();
+            var lastId = last.MigrationId;
+            var pendingMigrations = lastId != "000000000000"
+                ? History.SkipWhile(pair => pair.Key.MigrationId != lastId).Skip(1)
                 : History;
 
-            foreach (var pendingMigration in pendingMigrations)
+            foreach (var migration in pendingMigrations)
             {
-                foreach (var sql in pendingMigration.Value)
-                {
-                    DbScope.UnsafeSql(sql);
-                }
-                DbScope.Sql($"INSERT INTO __history (MigrationId, ProductVersion) VALUES ({pendingMigration.Key.MigrationId}, {pendingMigration.Key.ProductVersion});");
+                migration.Value(DbScope);
+
+                DbScope.Sql($"INSERT INTO __history (MigrationId, ProductVersion) VALUES ({migration.Key.MigrationId}, {migration.Key.ProductVersion});");
             }
         }
 
-        public Dictionary<MigrationKey, string[]> History = new Dictionary<MigrationKey, string[]>
+        private static void RunSqlBlock(ApplicationDbScope db, string sqlBlock)
         {
-            [new MigrationKey { MigrationId = "202103021542", ProductVersion = "1.1.0" }] = new[]
+            var start = 0;
+            int end;
+            while ((end = sqlBlock.IndexOf(';', start)) > 0)
             {
-                @"CREATE TABLE rules
+                var sql = sqlBlock.Substring(start, end - start + 1).Trim();
+                db.UnsafeSql(sql);
+                start = end + 1;
+            }
+        }
+
+        public Dictionary<MigrationKey, Action<ApplicationDbScope>> History = new()
+        {
+            [new MigrationKey { MigrationId = "202103021542", ProductVersion = "1.1.0" }] = db =>
+            {
+                RunSqlBlock(db, """
+CREATE TABLE rules
 (
     Id text PRIMARY KEY,
     Type text,
@@ -77,22 +89,28 @@ Would you like to download it now?", "Upgrade", MessageBoxButtons.YesNo, Message
     ListenPort integer,
     ConnectTo text,
     ConnectPort integer
-);",
-                "CREATE UNIQUE INDEX IX_Rules_Type_ListenOn_ListenPort ON Rules(Type, ListenOn, ListenPort);",
+);
+CREATE UNIQUE INDEX IX_Rules_Type_ListenOn_ListenPort ON Rules(Type, ListenOn, ListenPort);
+"""
+                );
             },
 
-            [new MigrationKey { MigrationId = "202201172103", ProductVersion = "1.2.0" }] = new[]
+            [new MigrationKey { MigrationId = "202201172103", ProductVersion = "1.2.0" }] = db =>
             {
-                "ALTER TABLE rules ADD Note text;",
-                "ALTER TABLE rules ADD `Group` text;",
+                RunSqlBlock(db, """
+ALTER TABLE rules ADD Note text;
+ALTER TABLE rules ADD `Group` text;
+"""
+                );
             },
 
-            [new MigrationKey { MigrationId = "202202221635", ProductVersion = "1.3.0" }] = new[]
+            [new MigrationKey { MigrationId = "202202221635", ProductVersion = "1.3.0" }] = db =>
             {
-                "ALTER TABLE rules RENAME TO rulesOld;",
-                "DROP INDEX IX_Rules_Type_ListenOn_ListenPort;",
+                RunSqlBlock(db, """
+ALTER TABLE rules RENAME TO rulesOld;
+DROP INDEX IX_Rules_Type_ListenOn_ListenPort;
 
-                @"CREATE TABLE rules (
+CREATE TABLE rules (
 	Id text PRIMARY KEY,
 	Type text,
 	ListenOn text,
@@ -101,27 +119,35 @@ Would you like to download it now?", "Upgrade", MessageBoxButtons.YesNo, Message
 	ConnectPort integer,
 	Comment text,
 	`Group` text 
-);",
-                "CREATE UNIQUE INDEX IX_Rules_Type_ListenOn_ListenPort ON Rules ( Type, ListenOn, ListenPort );",
-
-                "INSERT INTO rules SELECT Id, Type, ListenOn, ListenPort, ConnectTo, ConnectPort, Note, `Group` FROM rulesOld;",
-                "DROP TABLE rulesOld;",
+);
+CREATE UNIQUE INDEX IX_Rules_Type_ListenOn_ListenPort ON Rules ( Type, ListenOn, ListenPort );
+INSERT INTO rules SELECT Id, Type, ListenOn, ListenPort, ConnectTo, ConnectPort, Note, `Group` FROM rulesOld;
+DROP TABLE rulesOld;
+"""
+                );
             },
 
-            [new MigrationKey { MigrationId = "202303092024", ProductVersion = "1.4.0" }] = new[]
+            [new MigrationKey { MigrationId = "202303092024", ProductVersion = "1.4.0" }] = db =>
             {
-                @"CREATE TABLE configs (
+                RunSqlBlock(db, """
+CREATE TABLE configs (
 	Item text,
 	`Key` text,
 	Value text
-);",
+);
 
-"CREATE UNIQUE INDEX IX_Configs_Key ON configs ( Item, `Key` );",
+CREATE UNIQUE INDEX IX_Configs_Key ON configs ( Item, `Key` );
 
-"INSERT INTO configs ( Item, `Key`, Value ) VALUES ( 'MainWindow', 'Width', '720' );",
-"INSERT INTO configs ( Item, `Key`, Value ) VALUES ( 'MainWindow', 'Height', '500' );",
-"INSERT INTO configs ( Item, `Key`, Value ) VALUES ( 'PortProxy', 'ColumnWidths', '[24, 64, 140, 100, 140, 100, 100]' );",
+INSERT INTO configs ( Item, `Key`, Value ) VALUES ( 'MainWindow', 'Width', '720' );
+INSERT INTO configs ( Item, `Key`, Value ) VALUES ( 'MainWindow', 'Height', '500' );
+INSERT INTO configs ( Item, `Key`, Value ) VALUES ( 'PortProxy', 'ColumnWidths', '[24, 64, 140, 100, 140, 100, 100]' );
+"""
+                );
             },
+
+            //[new MigrationKey { MigrationId = "202306181620", ProductVersion = "1.5.0" }] = db =>
+            //{
+            //},
         };
     }
 }

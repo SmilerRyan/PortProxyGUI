@@ -9,21 +9,15 @@ namespace PortProxyGUI.Data
 {
     public class ApplicationDbScope : SqliteScope<ApplicationDbScope>
     {
-        public static readonly string AppDbDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "PortProxyGUI");
-        public static readonly string AppDbFile = Path.Combine(AppDbDirectory, "config.db");
-
         public static ApplicationDbScope FromFile(string file)
         {
-            var dir = Path.GetDirectoryName(file);
-
-            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-            if (!File.Exists(file))
-            {
 #if NETCOREAPP3_0_OR_GREATER
 #else
+            if (!File.Exists(file))
+            {
                 System.Data.SQLite.SQLiteConnection.CreateFile(file);
-#endif
             }
+#endif
 
             var scope = new ApplicationDbScope($"Data Source=\"{file}\"");
             scope.Migrate();

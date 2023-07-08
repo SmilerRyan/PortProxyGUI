@@ -47,11 +47,12 @@ namespace PortProxyGUI.UI
             ListViewItem listviewX, listviewY;
 
             // Cast the objects to be compared to ListViewItem objects
-            listviewX = (ListViewItem)x;
-            listviewY = (ListViewItem)y;
+            listviewX = x as ListViewItem;
+            listviewY = y as ListViewItem;
 
             // Compare the two items
-            if (listviewX.SubItems[ColumnToSort].Tag?.ToString() == "Number" && listviewY.SubItems[ColumnToSort].Tag?.ToString() == "Number")
+            if ((listviewX.SubItems[ColumnToSort].Tag as string) == Constant.SortByInt32
+                && (listviewY.SubItems[ColumnToSort].Tag as string) == Constant.SortByInt32)
             {
                 int.TryParse(listviewX.SubItems[ColumnToSort].Text, out var xint);
                 int.TryParse(listviewY.SubItems[ColumnToSort].Text, out var yint);

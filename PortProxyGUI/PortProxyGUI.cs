@@ -13,7 +13,7 @@ namespace PortProxyGUI
 {
     public partial class PortProxyGUI : Form
     {
-        private readonly ListViewColumnSorter lvwColumnSorter = new ListViewColumnSorter();
+        private readonly ListViewColumnSorter lvwColumnSorter = new();
 
         public SetProxy SetProxyForm;
         public About AboutForm;
@@ -25,6 +25,7 @@ namespace PortProxyGUI
             Font = InterfaceUtil.UiFont;
 
             listViewProxies.ListViewItemSorter = lvwColumnSorter;
+            toolStripStatusLabel_Status.Text = $"Welcome to Port Proxy GUI v{Application.ProductVersion}";
         }
 
         private void PortProxyGUI_Load(object sender, EventArgs e)
@@ -180,9 +181,9 @@ namespace PortProxyGUI
             {
                 new ListViewSubItem(item, rule.Type),
                 new ListViewSubItem(item, rule.ListenOn),
-                new ListViewSubItem(item, rule.ListenPort.ToString()) { Tag = "Number" },
+                new ListViewSubItem(item, rule.ListenPort.ToString()) { Tag = Constant.SortByInt32 },
                 new ListViewSubItem(item, rule.ConnectTo),
-                new ListViewSubItem(item, rule.ConnectPort.ToString ()) { Tag = "Number" },
+                new ListViewSubItem(item, rule.ConnectPort.ToString ()) { Tag = Constant.SortByInt32 },
                 new ListViewSubItem(item, rule.Comment ?? ""),
             });
 
@@ -367,7 +368,7 @@ namespace PortProxyGUI
             if (result == DialogResult.OK)
             {
                 var fileName = dialog.FileName;
-                File.Copy(ApplicationDbScope.AppDbFile, fileName, true);
+                File.Copy(Program.AppDbFile, fileName, true);
             }
         }
 

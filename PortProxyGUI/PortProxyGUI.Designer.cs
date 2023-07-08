@@ -223,7 +223,6 @@
             // 
             // openFileDialog_Import
             // 
-            openFileDialog_Import.FileName = "openFileDialog1";
             resources.ApplyResources(openFileDialog_Import, "openFileDialog_Import");
             // 
             // statusStrip_Footer
