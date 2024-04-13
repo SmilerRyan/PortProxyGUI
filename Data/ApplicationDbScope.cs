@@ -3,9 +3,126 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Drawing;
+using System.Text.RegularExpressions;
 
 namespace PortProxyGUI.Data
 {
+
+    public class Rule : IEquatable<Rule>
+    {
+        public string Id { get; set; }
+
+        public string Type { get; set; }
+        public string ListenOn { get; set; }
+        public int ListenPort { get; set; }
+        public string ConnectTo { get; set; }
+        public int ConnectPort { get; set; }
+        public string Comment { get; set; }
+        public string Group { get; set; }
+
+        public bool Valid => ListenPort > 0 && ConnectPort > 0;
+
+        private string _realListenPort;
+        /// <summary>
+        /// Not mapped
+        /// </summary>
+        public string RealListenPort
+        {
+            get => ListenPort > 0 ? ListenPort.ToString() : _realListenPort;
+            set => _realListenPort = value;
+        }
+
+        private string _realConnectPort;
+        /// <summary>
+        /// Not mapped
+        /// </summary>
+        public string RealConnectPort
+        {
+            get => ConnectPort > 0 ? ConnectPort.ToString() : _realConnectPort;
+            set => _realConnectPort = value;
+        }
+
+        public bool Equals(Rule other)
+        {
+            return Id == other.Id
+                && Type == other.Type
+                && ListenOn == other.ListenOn
+                && ListenPort == other.ListenPort
+                && ConnectTo == other.ConnectTo
+                && ConnectPort == other.ConnectPort
+                && Comment == other.Comment
+                && Group == other.Group;
+        }
+
+        public bool EqualsWithKeys(Rule other)
+        {
+            return Type == other.Type
+                && ListenOn == other.ListenOn
+                && ListenPort == other.ListenPort;
+        }
+
+        public static int ParsePort(string portString)
+        {
+            if (int.TryParse(portString, out var port) && 0 < port && port < 65536) return port;
+            else throw new NotSupportedException($"Invalid port string. ({portString})");
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as Rule);
+        }
+    }
+    
+    public class Config
+    {
+        public string Item { get; set; }
+        public string Key { get; set; }
+        public string Value { get; set; }
+    }
+
+    public class AppConfig
+    {
+        public Size MainWindowSize = new(720, 500);
+        public int[] PortProxyColumnWidths = new int[] { 24, 64, 140, 100, 140, 100, 100 };
+
+        private readonly Regex _intArrayRegex = new(@"^\[\s*(\d+)(?:\s*,\s*(\d+))*\s*\]$");
+
+        public AppConfig() { }
+        public AppConfig(Config[] rows)
+        {
+            {
+                var item = rows.Where(x => x.Item == "MainWindow");
+                if (int.TryParse(item.FirstOrDefault(x => x.Key == "Width")?.Value, out var width)
+                    && int.TryParse(item.FirstOrDefault(x => x.Key == "Height")?.Value, out var height))
+                {
+                    MainWindowSize = new Size(width, height);
+                }
+                else MainWindowSize = new Size(720, 500);
+            }
+
+            {
+                var item = rows.Where(x => x.Item == "PortProxy");
+                var s_ColumnWidths = item.FirstOrDefault(x => x.Key == "ColumnWidths").Value;
+                var match = _intArrayRegex.Match(s_ColumnWidths);
+
+                if (match.Success)
+                {
+                    PortProxyColumnWidths = match.Groups
+                        .OfType<Group>().Skip(1)
+                        .SelectMany(x => x.Captures.OfType<Capture>())
+                        .Select(x => int.Parse(x.Value))
+                        .ToArray();
+                }
+                else
+                {
+                    PortProxyColumnWidths = new int[0];
+                }
+            }
+        }
+
+    }
+
     public class ApplicationDbScope
     {
         public static readonly string AppDbDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "PortProxyGUI");
@@ -16,13 +133,6 @@ namespace PortProxyGUI.Data
             var dir = Path.GetDirectoryName(file);
 
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-            if (!File.Exists(file))
-            {
-#if NETCOREAPP3_0_OR_GREATER
-#else
-#endif
-            }
-
             var scope = new ApplicationDbScope($"Data Source=\"{file}\"");
             return scope;
         }
@@ -216,21 +326,6 @@ public void Update<T>(T obj) where T : class
         {
             var s_portProxyColumnWidths = $"[{appConfig.PortProxyColumnWidths.Select(x => x.ToString()).Join(", ")}]";
             File.WriteAllText("AppConfig.ini", $"MW_Width={appConfig.MainWindowSize.Width}\nMW_Height={appConfig.MainWindowSize.Height}\nPP_ColumnWidths={s_portProxyColumnWidths}\n");
-        }
-
-        internal object SqlQuery(string v)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void UnsafeSql(string v)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void Sql(string v)
-        {
-            throw new NotImplementedException();
         }
     }
 }
