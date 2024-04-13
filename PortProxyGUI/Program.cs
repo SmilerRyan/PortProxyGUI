@@ -9,10 +9,7 @@ namespace PortProxyGUI
     {
         public static readonly ApplicationDbScope Database = ApplicationDbScope.FromFile(
             Path.Combine(
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                    "PortProxyGUI"
-                ), "config.db"
+                Environment.CurrentDirectory, "config.db"
             ));
 
         /// <summary>
