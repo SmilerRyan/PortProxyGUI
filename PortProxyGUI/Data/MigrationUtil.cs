@@ -110,17 +110,7 @@ Would you like to download it now?", "Upgrade", MessageBoxButtons.YesNo, Message
 
             [new MigrationKey { MigrationId = "202303092024", ProductVersion = "1.4.0" }] = new[]
             {
-                @"CREATE TABLE configs (
-	Item text,
-	`Key` text,
-	Value text
-);",
-
-"CREATE UNIQUE INDEX IX_Configs_Key ON configs ( Item, `Key` );",
-
-"INSERT INTO configs ( Item, `Key`, Value ) VALUES ( 'MainWindow', 'Width', '720' );",
-"INSERT INTO configs ( Item, `Key`, Value ) VALUES ( 'MainWindow', 'Height', '500' );",
-"INSERT INTO configs ( Item, `Key`, Value ) VALUES ( 'PortProxy', 'ColumnWidths', '[24, 64, 140, 100, 140, 100, 100]' );",
+                @"", "", "", "", "",
             },
         };
     }

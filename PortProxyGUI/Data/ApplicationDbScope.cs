@@ -95,18 +95,49 @@ namespace PortProxyGUI.Data
 
         public AppConfig GetAppConfig()
         {
-            var configRows = SqlQuery<Config>($"SELECT * FROM Configs;");
-            var appConfig = new AppConfig(configRows);
+            var appConfig = new AppConfig();
+            try
+            {
+                string[] lines = File.ReadAllLines("AppConfig.ini");
+                foreach (string line in lines)
+                {
+                    string[] parts = line.Split('=');
+                    if (parts.Length == 2)
+                    {
+                        string key = parts[0].Trim();
+                        string value = parts[1].Trim();
+                        switch (key)
+                        {
+                            case "MW_Width":
+                                appConfig.MainWindowSize.Width = int.Parse(value);
+                                break;
+                            case "MW_Height":
+                                appConfig.MainWindowSize.Height = int.Parse(value);
+                                break;
+                            case "PP_ColumnWidths":
+                                List<int> columnWidths = value
+                                    .Replace("[", "")
+                                    .Replace("]", "")
+                                    .Split(',')
+                                    .Select(int.Parse)
+                                    .ToList();
+                                appConfig.PortProxyColumnWidths = columnWidths.ToArray();
+                                break;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while reading AppConfig.ini: {ex.Message}");
+            }
             return appConfig;
         }
 
         public void SaveAppConfig(AppConfig appConfig)
         {
-            Sql($"UPDATE Configs SET Value = {appConfig.MainWindowSize.Width} WHERE Item = 'MainWindow' AND `Key` = 'Width';");
-            Sql($"UPDATE Configs SET Value = {appConfig.MainWindowSize.Height} WHERE Item = 'MainWindow' AND `Key` = 'Height';");
-
             var s_portProxyColumnWidths = $"[{appConfig.PortProxyColumnWidths.Select(x => x.ToString()).Join(", ")}]";
-            Sql($"UPDATE Configs SET Value = {s_portProxyColumnWidths} WHERE Item = 'PortProxy' AND `Key` = 'ColumnWidths';");
+            File.WriteAllText("AppConfig.ini", $"MW_Width={appConfig.MainWindowSize.Width}\nMW_Height={appConfig.MainWindowSize.Height}\nPP_ColumnWidths={s_portProxyColumnWidths}\n");
         }
 
     }
