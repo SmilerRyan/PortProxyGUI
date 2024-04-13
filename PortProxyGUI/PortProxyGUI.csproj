@@ -12,7 +12,6 @@
     <RepositoryUrl>https://github.com/zmjack/PortProxyGUI</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>portproxy TCP/IP redirector</PackageTags>
-    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <Copyright>Copyright © nstandard.net 2020</Copyright>
     <Version>1.4.1</Version>
     <ApplicationIcon>icon.ico</ApplicationIcon>
@@ -30,13 +29,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="..\LICENSE.md">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NStandard" Version="0.63.1" />
