@@ -287,13 +287,13 @@
     <value>389, 17</value>
   </data>
   <data name="saveFileDialog_Export.Filter" xml:space="preserve">
-    <value>Database File|*.db</value>
+    <value>CSV File|*.csv</value>
   </data>
   <data name="openFileDialog_Import.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>569, 17</value>
   </data>
   <data name="openFileDialog_Import.Filter" xml:space="preserve">
-    <value>Database File|*.db</value>
+    <value>CSV File|*.csv</value>
   </data>
   <data name="statusStrip_Footer.TrayLocation" type="System.Drawing.Point, System.Drawing">
     <value>755, 17</value>

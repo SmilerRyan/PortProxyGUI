@@ -264,7 +264,7 @@ namespace PortProxyGUI {
             var result = dialog.ShowDialog();
             if (result == DialogResult.OK) {
                 var fileName = dialog.FileName;
-                MessageBox.Show("Exporting is not available yet. You selected: " + fileName);
+                try { File.Copy("appRules.csv", fileName, true); } catch { }
             }
         }
         private void toolStripMenuItem_Import_Click(object sender, EventArgs e) {
