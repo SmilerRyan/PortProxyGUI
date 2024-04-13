@@ -1,7 +1,4 @@
 Id,Type,ListenOn,ListenPort,ConnectTo,ConnectPort,Comment,Group
-1,etc,etc,etc,etc,etc,etc,etc
-2,etc,etc,etc,etc,etc,etc,etc
-3,etc,etc,etc,etc,etc,etc,etc
 fab58525-09c8-4f4b-93e4-2ca89834cbea,v4tov4,*,1,1.1.1.1,1,1,1
 1cf2111d-ef58-437b-99e9-5a43fa348307,v4tov4,1.2.3.4,1234,1.2.3.4,1234,1234,
 731febd4-0479-40e6-8616-7ecb460465a0,v4tov4,1.2.3.4,1234,1.2.3.4,1234,1234,1

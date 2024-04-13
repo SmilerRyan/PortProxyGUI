@@ -45,12 +45,48 @@ namespace PortProxyGUI.Data
             return SqlQuery<Migration>($"SELECT * FROM __history ORDER BY MigrationId DESC LIMIT 1;").First();
         }
 
-        public IEnumerable<Rule> Rules => SqlQuery<Rule>($"SELECT * FROM Rules;");
+        public IEnumerable<Rule> Rules
+{
+  get
+  {
+    // Replace "path/to/your/rules.csv" with the actual path to your CSV file
+    var lines = File.ReadAllLines("appRules.csv");
 
-        public Rule GetRule(string type, string listenOn, int listenPort)
-        {
-            return SqlQuery<Rule>($"SELECT * FROM Rules WHERE Type={type} AND ListenOn={listenOn} AND ListenPort={listenPort} LIMIT 1;").FirstOrDefault();
-        }
+    // Assuming the first line contains column headers
+    var headers = lines.First().Split(',');
+
+    // Skip the header row for data processing
+    var data = lines.Skip(1);
+
+    return data.Select(line =>
+    {
+      var values = line.Split(',');
+      // Map CSV values to Rule properties (assuming matching order)
+      return new Rule
+      {
+        Id = values[Array.IndexOf(headers, "Id")],
+        Type = values[Array.IndexOf(headers, "Type")],
+        ListenOn = values[Array.IndexOf(headers, "ListenOn")],
+        ListenPort = int.Parse(values[Array.IndexOf(headers, "ListenPort")]),
+        ConnectTo = values[Array.IndexOf(headers, "ConnectTo")],
+        ConnectPort = int.Parse(values[Array.IndexOf(headers, "ConnectPort")]),
+        Comment = values[Array.IndexOf(headers, "Comment")],
+        Group = values[Array.IndexOf(headers, "Group")],
+      };
+    });
+  }
+}
+
+public Rule GetRule(string type, string listenOn, int listenPort)
+{
+  // Load rules using the Rules property getter
+  var allRules = Rules.ToList(); // Load all rules into memory for searching
+
+  // Search for the rule based on your criteria
+  return allRules.FirstOrDefault(rule => rule.Type == type && rule.ListenOn == listenOn && rule.ListenPort == listenPort);
+}
+
+
 
         public void Add<T>(T obj) where T : class
         {
