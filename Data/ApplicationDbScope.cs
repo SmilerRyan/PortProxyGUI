@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Drawing;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 namespace PortProxyGUI.Data {
     public class Rule : IEquatable<Rule> {
         public string Id { get; set; }
@@ -130,13 +131,11 @@ namespace PortProxyGUI.Data {
         }
         public void Update<T>(T obj) where T : class {
             if (obj is Rule rule) {
-                var filePath = "appRules.csv";
-                var allLines = File.ReadAllLines(filePath).ToList();
+                var allLines = File.ReadAllLines("appRules.csv").ToList();
                 var targetIndex = allLines.FindIndex(line => line.Split(',')[0] == rule.Id.ToString());
                 if (targetIndex != -1) {
                     var updatedLine = $"{rule.Id},{rule.Type},{rule.ListenOn},{rule.ListenPort},{rule.ConnectTo},{rule.ConnectPort},{rule.Comment ?? ""},{rule.Group ?? ""}";
                     allLines[targetIndex] = updatedLine;
-                    File.WriteAllLines(filePath, allLines.ToArray());
                 } else {
                     Console.WriteLine($"Rule with Id '{rule.Id}' not found in the CSV file for update.");
                 }
@@ -149,13 +148,9 @@ namespace PortProxyGUI.Data {
         }
         public void Remove<T>(T obj) where T : class {
             if (obj is Rule rule) {
-                var filePath = "appRules.csv";
-                var allLines = File.ReadAllLines(filePath).ToList();
+                var allLines = File.ReadAllLines("appRules.csv").ToList();
                 var targetIndex = allLines.FindIndex(line => { return line.Split(',')[0] == rule.Id.ToString(); });
-                if (targetIndex != -1) {
-                    allLines.RemoveAt(targetIndex);
-                    File.WriteAllLines(filePath, allLines.ToArray());
-                }
+                if (targetIndex != -1) { allLines.RemoveAt(targetIndex); File.WriteAllLines("appRules.csv", allLines.ToArray()); }
             } else throw new NotSupportedException($"Removing {obj.GetType().FullName} is not supported.");
         }
         public void RemoveRange<T>(IEnumerable<T> objs) where T : class {
