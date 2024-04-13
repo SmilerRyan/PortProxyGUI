@@ -1,5 +1,4 @@
-﻿using NStandard;
-using PortProxyGUI.Data;
+﻿using PortProxyGUI.Data;
 using PortProxyGUI.Utils;
 using System;
 using System.Drawing;
@@ -15,6 +14,16 @@ namespace PortProxyGUI {
         private ListViewItem _listViewItem;
         private Rule _itemRule;
 
+        public static bool IsNullOrWhiteSpace(string value)
+        {
+            if (value == null)
+            {
+                return true;
+            }
+
+            return value.Trim().Length == 0;
+        }
+
         public SetProxy(PortProxyGUI parent)
         {
             ParentWindow = parent;
@@ -27,7 +36,7 @@ namespace PortProxyGUI {
             var groupNames = (
                 from g in parent.listViewProxies.Groups.OfType<ListViewGroup>()
                 let header = g.Header
-                where !header.IsNullOrWhiteSpace()
+                where !IsNullOrWhiteSpace(header)
                 select header
             ).ToArray();
             comboBox_Group.Items.AddRange(groupNames);
@@ -66,9 +75,38 @@ namespace PortProxyGUI {
             textBox_Comment.Text = rule.Comment;
         }
 
-        private bool IsIPv6(string ip)
+        public static bool IsIPv6(string ip)
         {
-            return ip.IsMatch(new Regex(@"^[\dABCDEF]{2}(?::(?:[\dABCDEF]{2})){5}$"));
+            if (string.IsNullOrEmpty(ip))
+            {
+                return false;
+            }
+
+            // Split by colons (":")
+            var segments = ip.Split(':');
+
+            // Check for valid segment count (8)
+            if (segments.Length != 8)
+            {
+                return false;
+            }
+
+            // Validate each segment
+            foreach (var segment in segments)
+            {
+                if (segment.Length > 4 || segment.Length == 0)
+                {
+                    return false;
+                }
+
+                // Check for valid hexadecimal characters (0-9, A-F)
+                if (!System.Text.RegularExpressions.Regex.IsMatch(segment, "^[0-9A-Fa-f]+$"))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private string GetPassType(string listenOn, string connectTo)

@@ -1,5 +1,4 @@
-﻿using NStandard;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -195,8 +194,9 @@ namespace PortProxyGUI.Data {
             }
             return appConfig;
         }
-        public void SaveAppConfig(AppConfig appConfig) {
-            var s_portProxyColumnWidths = $"[{appConfig.PortProxyColumnWidths.Select(x => x.ToString()).Join(", ")}]";
+        public void SaveAppConfig(AppConfig appConfig)
+        {
+            var s_portProxyColumnWidths = $"[{string.Join(", ", appConfig.PortProxyColumnWidths.Select(x => x.ToString()).ToList().ToArray())}]";
             File.WriteAllText("AppConfig.ini", $"MW_Width={appConfig.MainWindowSize.Width}\nMW_Height={appConfig.MainWindowSize.Height}\nPP_ColumnWidths={s_portProxyColumnWidths}\n");
         }
     }

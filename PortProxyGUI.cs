@@ -1,5 +1,4 @@
-﻿using NStandard;
-using PortProxyGUI.Data;
+﻿using PortProxyGUI.Data;
 using PortProxyGUI.UI;
 using PortProxyGUI.Utils;
 using System;
@@ -31,15 +30,28 @@ namespace PortProxyGUI {
         private void PortProxyGUI_Shown(object sender, EventArgs e) {
             RefreshProxyList();
         }
-        private void ResetWindowSize() {
+
+        private void ResetWindowSize()
+        {
             Size = AppConfig.MainWindowSize;
-            if (AppConfig.PortProxyColumnWidths.Length != listViewProxies.Columns.Count) {
-                Any.ReDim(ref AppConfig.PortProxyColumnWidths, listViewProxies.Columns.Count);
+
+            // Check if column count mismatch exists
+            if (AppConfig.PortProxyColumnWidths.Length != listViewProxies.Columns.Count)
+            {
+                // Resize AppConfig.PortProxyColumnWidths to match listViewProxies.Columns.Count
+                Array.Resize(ref AppConfig.PortProxyColumnWidths, listViewProxies.Columns.Count);
             }
-            foreach (var (column, configWidth) in Any.Zip(listViewProxies.Columns.OfType<ColumnHeader>(), AppConfig.PortProxyColumnWidths)) {
-                column.Width = configWidth;
+
+            // Loop through columns and set widths
+            for (int i = 0; i < AppConfig.PortProxyColumnWidths.Length; i++)
+            {
+                if (i < listViewProxies.Columns.Count)
+                {
+                    listViewProxies.Columns[i].Width = AppConfig.PortProxyColumnWidths[i];
+                }
             }
         }
+
         private Data.Rule ParseRule(ListViewItem item) {
             var subItems = item.SubItems.OfType<ListViewSubItem>().ToArray();
             int listenPort, connectPort;
@@ -96,7 +108,7 @@ namespace PortProxyGUI {
             var groups = (
                 from g in rules.GroupBy(x => x.Group)
                 let name = g.Key
-                where !name.IsNullOrWhiteSpace()
+                where !IsNullOrWhiteSpace(name)
                 orderby name
                 select new ListViewGroup(name)
             ).ToArray();
@@ -112,6 +124,16 @@ namespace PortProxyGUI {
                 listViewProxies.Items.Add(item);
             }
         }
+        public static bool IsNullOrWhiteSpace(string value)
+        {
+            if (value == null)
+            {
+                return true;
+            }
+
+            return value.Trim().Length == 0;
+        }
+
         public void UpdateListViewItem(ListViewItem item, Data.Rule rule, int imageIndex) {
             item.ImageIndex = imageIndex;
             item.Tag = rule.Id;
@@ -124,7 +146,7 @@ namespace PortProxyGUI {
                 new ListViewSubItem(item, rule.ConnectPort.ToString ()) { Tag = "Number" },
                 new ListViewSubItem(item, rule.Comment ?? ""),
             });
-            if (rule.Group.IsNullOrWhiteSpace()) item.Group = null;
+            if (IsNullOrWhiteSpace(rule.Group)) item.Group = null;
             else {
                 var group = listViewProxies.Groups.OfType<ListViewGroup>().FirstOrDefault(x => x.Header == rule.Group);
                 if (group == null) { group = new ListViewGroup(rule.Group); listViewProxies.Groups.Add(group); }
