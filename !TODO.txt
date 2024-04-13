@@ -1,2 +1,1 @@
-To Do / To Fix
-- import and export of rules etc
+To Do - Allow importing rules from CSV
