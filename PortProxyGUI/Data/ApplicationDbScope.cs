@@ -118,11 +118,15 @@ public Rule GetRule(string type, string listenOn, int listenPort)
 
         public void Remove<T>(T obj) where T : class
         {
-            if (obj is Rule rule)
-            {
-                Sql($"DELETE FROM Rules WHERE Id={rule.Id};");
-            }
-            else throw new NotSupportedException($"Removing {obj.GetType().FullName} is not supported.");
+            if (obj is Rule rule) {
+                var filePath = "appRules.csv";
+                var allLines = File.ReadAllLines(filePath).ToList();
+                var targetIndex = allLines.FindIndex(line => { return line.Split(',')[0] == rule.Id.ToString(); });
+                if (targetIndex != -1) {
+                    allLines.RemoveAt(targetIndex);
+                    File.WriteAllLines(filePath, allLines);
+                }
+            } else throw new NotSupportedException($"Removing {obj.GetType().FullName} is not supported.");
         }
         public void RemoveRange<T>(IEnumerable<T> objs) where T : class
         {
