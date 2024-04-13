@@ -14,6 +14,7 @@ namespace PortProxyGUI
             PortProxyGUI = portProxyGUI;
 
             InitializeComponent();
+            Icon = Properties.Resources.icon;
             Font = InterfaceUtil.UiFont;
 
             label_version.Text = label_version.Text + "  v" + Application.ProductVersion;

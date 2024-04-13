@@ -22,6 +22,7 @@ namespace PortProxyGUI
         public PortProxyGUI()
         {
             InitializeComponent();
+            Icon = Properties.Resources.icon;
             Font = InterfaceUtil.UiFont;
 
             listViewProxies.ListViewItemSorter = lvwColumnSorter;

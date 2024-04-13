@@ -22,6 +22,7 @@ namespace PortProxyGUI
             ParentWindow = parent;
 
             InitializeComponent();
+            Icon = Properties.Resources.icon;
             Font = InterfaceUtil.UiFont;
 
             AutoTypeString = comboBox_Type.Text = comboBox_Type.Items.OfType<string>().First();
