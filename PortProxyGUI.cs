@@ -260,10 +260,10 @@ namespace PortProxyGUI
                         break;
 
                     case ToolStripMenuItem item when item == toolStripMenuItem_FlushDnsCache:
-                        DnsUtil.FlushCache();
+                        var status = Native.NativeMethods.DnsFlushResolverCache();
+                        if (status == 0) throw new InvalidOperationException("Flush DNS Cache failed.");
                         toolStripStatusLabel_Status.Text = $"{DateTime.Now} : DNS cache cleared.";
                         break;
-
                     case ToolStripMenuItem item when item == toolStripMenuItem_Delete:
                         DeleteSelectedProxies();
                         break;
