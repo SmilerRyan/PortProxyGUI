@@ -124,7 +124,7 @@ public Rule GetRule(string type, string listenOn, int listenPort)
                 var targetIndex = allLines.FindIndex(line => { return line.Split(',')[0] == rule.Id.ToString(); });
                 if (targetIndex != -1) {
                     allLines.RemoveAt(targetIndex);
-                    File.WriteAllLines(filePath, allLines);
+                    File.WriteAllLines(filePath, allLines.ToArray());
                 }
             } else throw new NotSupportedException($"Removing {obj.GetType().FullName} is not supported.");
         }
