@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using static System.Windows.Forms.ListViewItem;
+using Rule = PortProxyGUI.Data.Rule;
 namespace PortProxyGUI {
     public partial class PortProxyGUI : Form {
         private readonly ListViewColumnSorter lvwColumnSorter = new ListViewColumnSorter();
@@ -275,7 +276,30 @@ namespace PortProxyGUI {
             var result = dialog.ShowDialog();
             if (result == DialogResult.OK) {
                 var fileName = dialog.FileName;
-                MessageBox.Show("Importing is not available yet. You selected: " + fileName);
+                try {
+                    using (var reader = new StreamReader(fileName)) {
+                        reader.ReadLine();
+                        string line;
+                        while ((line = reader.ReadLine()) != null) {
+                            var values = line.Split(',');
+                            if (values.Length != 8) {
+                                Console.WriteLine($"Warning: Invalid line format in CSV: {line}");
+                                continue;
+                            }
+                            Program.Database.Add(new Rule{
+                                Type = values[1].Trim(),
+                                ListenOn = values[2].Trim(),
+                                ListenPort = int.Parse(values[3].Trim()),
+                                ConnectTo = values[4].Trim(),
+                                ConnectPort = int.Parse(values[5].Trim()),
+                                Comment = values[6].Trim(),
+                                Group = values[7].Trim()
+                            });
+                        }
+                    }
+                } catch (Exception ex) {
+                    Console.WriteLine($"Error reading CSV file: {ex.Message}");
+                }
                 RefreshProxyList();
             }
         }
