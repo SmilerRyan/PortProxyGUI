@@ -264,7 +264,10 @@ namespace PortProxyGUI {
             var result = dialog.ShowDialog();
             if (result == DialogResult.OK) {
                 var fileName = dialog.FileName;
-                try { File.Copy("appRules.csv", fileName, true); } catch { }
+                try {
+                    if (!File.Exists("appRules.csv")) { RefreshProxyList(); }
+                    File.Copy("appRules.csv", fileName, true);
+                } catch { }
             }
         }
         private void toolStripMenuItem_Import_Click(object sender, EventArgs e) {
