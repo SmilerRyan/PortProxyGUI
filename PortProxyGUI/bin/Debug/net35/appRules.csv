@@ -1,2 +1,5 @@
 Id,Type,ListenOn,ListenPort,ConnectTo,ConnectPort,Comment,Group
 be088a29-e734-4101-ad10-7e7883db3e03,v4tov4,0.0.0.0,25565,127.0.0.1,59444,,
+65483d7f-eea2-4613-8419-5b4354767c38,v4tov4,1.1.1.1,2222,1.1.1.1,2222,,
+b7e8f107-7896-40d4-933a-a04b327467a9,v4tov4,*,2,1.1.1.1,1111,,
+0c8c0c6f-6d17-41e2-b3f7-c29bd69de4f5,v4tov4,8.8.8.8,8888,8.8.8.8,8888,,
