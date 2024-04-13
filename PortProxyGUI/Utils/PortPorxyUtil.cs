@@ -4,6 +4,7 @@ using PortProxyGUI.Native;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace PortProxyGUI.Utils
 {
@@ -47,6 +48,8 @@ namespace PortProxyGUI.Utils
                             ListenPort = listenPort,
                             ConnectTo = connectTo,
                             ConnectPort = connectPort,
+                            //Comment = comment,
+                            //Group = group,
                         });
                     }
                 }
