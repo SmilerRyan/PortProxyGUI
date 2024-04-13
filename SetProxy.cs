@@ -6,11 +6,8 @@ using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-
-namespace PortProxyGUI
-{
-    public partial class SetProxy : Form
-    {
+namespace PortProxyGUI {
+    public partial class SetProxy : Form {
         public readonly PortProxyGUI ParentWindow;
         private string AutoTypeString { get; }
 

@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-
-namespace PortProxyGUI.Native
-{
+namespace PortProxyGUI.Native {
     [Flags]
-    internal enum ServiceControls : uint
-    {
+    internal enum ServiceControls : uint {
         SERVICE_CONTROL_PARAMCHANGE = 0x00000006,
     }
-
     [Flags]
-    internal enum ServiceRights : uint
-    {
+    internal enum ServiceRights : uint {
         SERVICE_QUERY_CONFIG = 0x0001,
         SERVICE_CHANGE_CONFIG = 0x0002,
         SERVICE_QUERY_STATUS = 0x0004,
@@ -21,17 +16,7 @@ namespace PortProxyGUI.Native
         SERVICE_PAUSE_CONTINUE = 0x0040,
         SERVICE_INTERROGATE = 0x0080,
         SERVICE_USER_DEFINED_CONTROL = 0x0100,
-
-        SERVICE_ALL_ACCESS =
-            SERVICE_QUERY_CONFIG
-            | SERVICE_CHANGE_CONFIG
-            | SERVICE_QUERY_STATUS
-            | SERVICE_ENUMERATE_DEPENDENTS
-            | SERVICE_START
-            | SERVICE_STOP
-            | SERVICE_PAUSE_CONTINUE
-            | SERVICE_INTERROGATE
-            | SERVICE_USER_DEFINED_CONTROL
+        SERVICE_ALL_ACCESS = SERVICE_QUERY_CONFIG | SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS | SERVICE_ENUMERATE_DEPENDENTS | SERVICE_START | SERVICE_STOP | SERVICE_PAUSE_CONTINUE | SERVICE_INTERROGATE | SERVICE_USER_DEFINED_CONTROL
     }
     
     internal enum ServiceState : int
@@ -56,7 +41,7 @@ namespace PortProxyGUI.Native
         public uint dwCheckPoint;
         public uint dwWaitHint;
     }
-    
+
     internal class NativeMethods
     {
         [DllImport("advapi32.dll", EntryPoint = "OpenSCManagerW", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]

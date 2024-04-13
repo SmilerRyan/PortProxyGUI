@@ -9,67 +9,43 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using static System.Windows.Forms.ListViewItem;
-
-namespace PortProxyGUI
-{
-    public partial class PortProxyGUI : Form
-    {
+namespace PortProxyGUI {
+    public partial class PortProxyGUI : Form {
         private readonly ListViewColumnSorter lvwColumnSorter = new ListViewColumnSorter();
-
         public SetProxy SetProxyForm;
         public About AboutForm;
         private AppConfig AppConfig;
-
-        public PortProxyGUI()
-        {
+        public PortProxyGUI() {
             InitializeComponent();
             Icon = Properties.Resources.icon;
             Font = new(new FontFamily("Microsoft Sans Serif"), 8f);
-
             listViewProxies.ListViewItemSorter = lvwColumnSorter;
         }
-
-        private void PortProxyGUI_Load(object sender, EventArgs e)
-        {
+        private void PortProxyGUI_Load(object sender, EventArgs e) {
             AppConfig = Program.Database.GetAppConfig();
-
             var size = AppConfig.MainWindowSize;
             Left -= (size.Width - Width) / 2;
             Top -= (size.Height - Height) / 2;
-
             ResetWindowSize();
         }
-
-        private void PortProxyGUI_Shown(object sender, EventArgs e)
-        {
+        private void PortProxyGUI_Shown(object sender, EventArgs e) {
             RefreshProxyList();
         }
-
-        private void ResetWindowSize()
-        {
+        private void ResetWindowSize() {
             Size = AppConfig.MainWindowSize;
-
-            if (AppConfig.PortProxyColumnWidths.Length != listViewProxies.Columns.Count)
-            {
+            if (AppConfig.PortProxyColumnWidths.Length != listViewProxies.Columns.Count) {
                 Any.ReDim(ref AppConfig.PortProxyColumnWidths, listViewProxies.Columns.Count);
             }
-
-            foreach (var (column, configWidth) in Any.Zip(listViewProxies.Columns.OfType<ColumnHeader>(), AppConfig.PortProxyColumnWidths))
-            {
+            foreach (var (column, configWidth) in Any.Zip(listViewProxies.Columns.OfType<ColumnHeader>(), AppConfig.PortProxyColumnWidths)) {
                 column.Width = configWidth;
             }
         }
-
-        private Data.Rule ParseRule(ListViewItem item)
-        {
+        private Data.Rule ParseRule(ListViewItem item) {
             var subItems = item.SubItems.OfType<ListViewSubItem>().ToArray();
             int listenPort, connectPort;
-
             listenPort = Data.Rule.ParsePort(subItems[3].Text);
             connectPort = Data.Rule.ParsePort(subItems[5].Text);
-
-            var rule = new Data.Rule
-            {
+            var rule = new Data.Rule{
                 Type = subItems[1].Text.Trim(),
                 ListenOn = subItems[2].Text.Trim(),
                 ListenPort = listenPort,
@@ -80,74 +56,42 @@ namespace PortProxyGUI
             };
             return rule;
         }
-
-        private void EnableSelectedProxies()
-        {
+        private void EnableSelectedProxies() {
             var items = listViewProxies.SelectedItems.OfType<ListViewItem>();
-            foreach (var item in items)
-            {
+            foreach (var item in items) {
                 item.ImageIndex = 1;
-
-                try
-                {
-                    var rule = ParseRule(item);
-                    PortPorxyUtil.AddOrUpdateProxy(rule);
-                }
-                catch (NotSupportedException ex)
-                {
+                try { var rule = ParseRule(item); PortPorxyUtil.AddOrUpdateProxy(rule); } catch (NotSupportedException ex) {
                     MessageBox.Show(ex.Message, "Exclamation", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     return;
                 }
             }
             PortPorxyUtil.ParamChange();
         }
-
-        private void DisableSelectedProxies()
-        {
+        private void DisableSelectedProxies() {
             var items = listViewProxies.SelectedItems.OfType<ListViewItem>();
-            foreach (var item in items)
-            {
+            foreach (var item in items) {
                 item.ImageIndex = 0;
-
-                try
-                {
-                    var rule = ParseRule(item);
-                    PortPorxyUtil.DeleteProxy(rule);
-                }
-                catch (NotSupportedException ex)
-                {
+                try { var rule = ParseRule(item); PortPorxyUtil.DeleteProxy(rule); } catch (NotSupportedException ex) {
                     MessageBox.Show(ex.Message, "Exclamation", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     return;
                 }
             }
             PortPorxyUtil.ParamChange();
         }
-
-        private void DeleteSelectedProxies()
-        {
+        private void DeleteSelectedProxies() {
             var items = listViewProxies.SelectedItems.OfType<ListViewItem>();
             DisableSelectedProxies();
             Program.Database.RemoveRange(items.Select(x => new Data.Rule { Id = x.Tag.ToString() }));
             foreach (var item in items) listViewProxies.Items.Remove(item);
         }
-
-        private void SetProxyForUpdate(SetProxy form)
-        {
+        private void SetProxyForUpdate(SetProxy form) {
             var item = listViewProxies.SelectedItems.OfType<ListViewItem>().FirstOrDefault();
-            try
-            {
-                var rule = ParseRule(item);
-                form.UseUpdateMode(item, rule);
-            }
-            catch (NotSupportedException ex)
-            {
+            try { var rule = ParseRule(item); form.UseUpdateMode(item, rule); } catch (NotSupportedException ex) {
                 MessageBox.Show(ex.Message, "Exclamation", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
             }
         }
-
-        private void InitProxyGroups(Data.Rule[] rules)
-        {
+        private void InitProxyGroups(Data.Rule[] rules) {
             listViewProxies.Groups.Clear();
             var groups = (
                 from g in rules.GroupBy(x => x.Group)
@@ -158,28 +102,21 @@ namespace PortProxyGUI
             ).ToArray();
             listViewProxies.Groups.AddRange(groups);
         }
-
-        private void InitProxyItems(Data.Rule[] rules, Data.Rule[] proxies)
-        {
+        private void InitProxyItems(Data.Rule[] rules, Data.Rule[] proxies) {
             listViewProxies.Items.Clear();
-            foreach (var rule in rules)
-            {
+            foreach (var rule in rules) {
                 var imageIndex = proxies.Any(p => p.EqualsWithKeys(rule)) ? 1 : 0;
                 var group = listViewProxies.Groups.OfType<ListViewGroup>().FirstOrDefault(x => x.Header == rule.Group);
-
                 var item = new ListViewItem();
                 UpdateListViewItem(item, rule, imageIndex);
                 listViewProxies.Items.Add(item);
             }
         }
-
-        public void UpdateListViewItem(ListViewItem item, Data.Rule rule, int imageIndex)
-        {
+        public void UpdateListViewItem(ListViewItem item, Data.Rule rule, int imageIndex) {
             item.ImageIndex = imageIndex;
             item.Tag = rule.Id;
             item.SubItems.Clear();
-            item.SubItems.AddRange(new[]
-            {
+            item.SubItems.AddRange(new[]{
                 new ListViewSubItem(item, rule.Type),
                 new ListViewSubItem(item, rule.ListenOn),
                 new ListViewSubItem(item, rule.ListenPort.ToString()) { Tag = "Number" },
@@ -187,30 +124,20 @@ namespace PortProxyGUI
                 new ListViewSubItem(item, rule.ConnectPort.ToString ()) { Tag = "Number" },
                 new ListViewSubItem(item, rule.Comment ?? ""),
             });
-
             if (rule.Group.IsNullOrWhiteSpace()) item.Group = null;
-            else
-            {
+            else {
                 var group = listViewProxies.Groups.OfType<ListViewGroup>().FirstOrDefault(x => x.Header == rule.Group);
-                if (group == null)
-                {
-                    group = new ListViewGroup(rule.Group);
-                    listViewProxies.Groups.Add(group);
-                }
+                if (group == null) { group = new ListViewGroup(rule.Group); listViewProxies.Groups.Add(group); }
                 item.Group = group;
             }
         }
-
-        public void RefreshProxyList()
-        {
+        public void RefreshProxyList() {
             var proxies = PortPorxyUtil.GetProxies();
             var rules = Program.Database.Rules.ToArray();
-            foreach (var proxy in proxies)
-            {
+            foreach (var proxy in proxies) {
                 var matchedRule = rules.FirstOrDefault(r => r.EqualsWithKeys(proxy));
                 proxy.Id = matchedRule?.Id;
             }
-
             var pendingAdds = proxies.Where(x => x.Valid && x.Id == null);
             var pendingUpdates =
                 from proxy in proxies
@@ -218,47 +145,34 @@ namespace PortProxyGUI
                 where exsist is not null
                 where proxy.Valid && proxy.Id is not null
                 select proxy;
-
             Program.Database.AddRange(pendingAdds);
             Program.Database.UpdateRange(pendingUpdates);
-
             rules = Program.Database.Rules.ToArray();
             InitProxyGroups(rules);
             InitProxyItems(rules, proxies);
-
-            // CheckServiceStatus
             toolStripStatusLabel_ServiceNotRunning.Visible = !PortPorxyUtil.IsServiceRunning();
         }
-
-        private void contextMenuStrip_RightClick_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (sender is ContextMenuStrip strip)
-            {
+        private void contextMenuStrip_RightClick_MouseClick(object sender, MouseEventArgs e) {
+            if (sender is ContextMenuStrip strip) {
                 var selected = strip.Items.OfType<ToolStripMenuItem>().Where(x => x.Selected).FirstOrDefault();
                 if (selected is null || !selected.Enabled) return;
-
-                switch (selected)
-                {
+                switch (selected) {
                     case ToolStripMenuItem item when item == toolStripMenuItem_Enable: EnableSelectedProxies(); break;
                     case ToolStripMenuItem item when item == toolStripMenuItem_Disable: DisableSelectedProxies(); break;
-
                     case ToolStripMenuItem item when item == toolStripMenuItem_New:
                         SetProxyForm ??= new SetProxy(this);
                         SetProxyForm.UseNormalMode();
                         SetProxyForm.ShowDialog();
                         break;
-
                     case ToolStripMenuItem item when item == toolStripMenuItem_Modify:
                         SetProxyForm ??= new SetProxy(this);
                         SetProxyForUpdate(SetProxyForm);
                         SetProxyForm.ShowDialog();
                         break;
-
                     case ToolStripMenuItem item when item == toolStripMenuItem_Refresh:
                         RefreshProxyList();
                         toolStripStatusLabel_Status.Text = $"{DateTime.Now} : Refreshed.";
                         break;
-
                     case ToolStripMenuItem item when item == toolStripMenuItem_FlushDnsCache:
                         var status = Native.NativeMethods.DnsFlushResolverCache();
                         if (status == 0) throw new InvalidOperationException("Flush DNS Cache failed.");
@@ -267,135 +181,84 @@ namespace PortProxyGUI
                     case ToolStripMenuItem item when item == toolStripMenuItem_Delete:
                         DeleteSelectedProxies();
                         break;
-
                     case ToolStripMenuItem item when item == toolStripMenuItem_About:
-                        if (AboutForm == null)
-                        {
-                            AboutForm = new About(this);
-                            AboutForm.Show();
-                        }
+                        if (AboutForm == null) { AboutForm = new About(this); AboutForm.Show(); }
                         else AboutForm.Show();
                         break;
                 }
             }
         }
-
-        private void listView1_MouseUp(object sender, MouseEventArgs e)
-        {
-            if (sender is ListView listView)
-            {
+        private void listView1_MouseUp(object sender, MouseEventArgs e) {
+            if (sender is ListView listView) {
                 toolStripMenuItem_Enable.Enabled = e.Button == MouseButtons.Right && listView.SelectedItems.OfType<ListViewItem>().Any(x => x.ImageIndex == 0);
                 toolStripMenuItem_Disable.Enabled = e.Button == MouseButtons.Right && listView.SelectedItems.OfType<ListViewItem>().Any(x => x.ImageIndex == 1);
-
                 toolStripMenuItem_Delete.Enabled = e.Button == MouseButtons.Right && listView.SelectedItems.OfType<ListViewItem>().Any();
                 toolStripMenuItem_Modify.Enabled = e.Button == MouseButtons.Right && listView.SelectedItems.OfType<ListViewItem>().Count() == 1;
             }
         }
-
-        private void listView1_DoubleClick(object sender, EventArgs e)
-        {
-            if (sender is ListView listView)
-            {
+        private void listView1_DoubleClick(object sender, EventArgs e) {
+            if (sender is ListView listView) {
                 var selectAny = listView.SelectedItems.OfType<ListViewItem>().Any();
-                if (selectAny)
-                {
+                if (selectAny) {
                     SetProxyForm ??= new SetProxy(this);
                     SetProxyForUpdate(SetProxyForm);
                     SetProxyForm.ShowDialog();
                 }
             }
         }
-
-        private void listView1_ColumnClick(object sender, ColumnClickEventArgs e)
-        {
-            // Determine if clicked column is already the column that is being sorted.
-            if (e.Column == lvwColumnSorter.SortColumn)
-            {
-                // Reverse the current sort direction for this column.
-                if (lvwColumnSorter.Order == SortOrder.Ascending)
-                {
+        private void listView1_ColumnClick(object sender, ColumnClickEventArgs e) {
+            if (e.Column == lvwColumnSorter.SortColumn) {
+                if (lvwColumnSorter.Order == SortOrder.Ascending) {
                     lvwColumnSorter.Order = SortOrder.Descending;
-                }
-                else
-                {
+                } else {
                     lvwColumnSorter.Order = SortOrder.Ascending;
                 }
-            }
-            else
-            {
-                // Set the column number that is to be sorted; default to ascending.
+            } else {
                 lvwColumnSorter.SortColumn = e.Column;
                 lvwColumnSorter.Order = SortOrder.Ascending;
             }
-
-            // Perform the sort with these new sort options.
             listViewProxies.Sort();
         }
-
-        private void listViewProxies_KeyUp(object sender, KeyEventArgs e)
-        {
-            if (sender is ListView)
-            {
+        private void listViewProxies_KeyUp(object sender, KeyEventArgs e) {
+            if (sender is ListView) {
                 if (e.KeyCode == Keys.Delete) DeleteSelectedProxies();
             }
         }
-
-        private void listViewProxies_ColumnWidthChanged(object sender, ColumnWidthChangedEventArgs e)
-        {
-            if (AppConfig is not null && sender is ListView listView)
-            {
+        private void listViewProxies_ColumnWidthChanged(object sender, ColumnWidthChangedEventArgs e) {
+            if (AppConfig is not null && sender is ListView listView) {
                 AppConfig.PortProxyColumnWidths[e.ColumnIndex] = listView.Columns[e.ColumnIndex].Width;
             }
         }
-
-        private void PortProxyGUI_FormClosing(object sender, FormClosingEventArgs e)
-        {
+        private void PortProxyGUI_FormClosing(object sender, FormClosingEventArgs e) {
             Program.Database.SaveAppConfig(AppConfig);
         }
-
-        private void PortProxyGUI_Resize(object sender, EventArgs e)
-        {
-            if (AppConfig is not null && sender is Form form)
-            {
+        private void PortProxyGUI_Resize(object sender, EventArgs e) {
+            if (AppConfig is not null && sender is Form form) {
                 AppConfig.MainWindowSize = form.Size;
             }
         }
-
-        private void toolStripMenuItem_Export_Click(object sender, EventArgs e)
-        {
+        private void toolStripMenuItem_Export_Click(object sender, EventArgs e) {
             using var dialog = saveFileDialog_Export;
-
             var result = dialog.ShowDialog();
-            if (result == DialogResult.OK)
-            {
+            if (result == DialogResult.OK) {
                 var fileName = dialog.FileName;
-                File.Copy(ApplicationDbScope.AppDbFile, fileName, true);
+                MessageBox.Show("Exporting is not available yet. You selected: " + fileName);
             }
         }
-
-        private void toolStripMenuItem_Import_Click(object sender, EventArgs e)
-        {
+        private void toolStripMenuItem_Import_Click(object sender, EventArgs e) {
             using var dialog = openFileDialog_Import;
-
             var result = dialog.ShowDialog();
-            if (result == DialogResult.OK)
-            {
+            if (result == DialogResult.OK) {
                 var fileName = dialog.FileName;
-                
-                MessageBox.Show(fileName);
-
+                MessageBox.Show("Importing is not available yet. You selected: " + fileName);
                 RefreshProxyList();
             }
         }
-
-        private void toolStripMenuItem_ResetWindowSize_Click(object sender, EventArgs e)
-        {
+        private void toolStripMenuItem_ResetWindowSize_Click(object sender, EventArgs e) {
             AppConfig = new AppConfig();
             ResetWindowSize();
         }
-
-        private void toolStripStatusLabel_ServiceNotRunning_Click(object sender, EventArgs e)
-        {
+        private void toolStripStatusLabel_ServiceNotRunning_Click(object sender, EventArgs e) {
             PortPorxyUtil.StartService();
             toolStripStatusLabel_ServiceNotRunning.Visible = false;
         }
