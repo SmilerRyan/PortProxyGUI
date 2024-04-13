@@ -108,14 +108,46 @@ public Rule GetRule(string type, string listenOn, int listenPort)
             foreach (var obj in objs) Add(obj);
         }
 
-        public void Update<T>(T obj) where T : class
-        {
-            if (obj is Rule rule)
-            {
-                Sql($"UPDATE Rules SET Type={rule.Type}, ListenOn={rule.ListenOn}, ListenPort={rule.ListenPort}, ConnectTo={rule.ConnectTo}, ConnectPort={rule.ConnectPort} WHERE Id={rule.Id};");
-            }
-            else throw new NotSupportedException($"Updating {obj.GetType().FullName} is not supported.");
-        }
+
+
+
+public void Update<T>(T obj) where T : class
+{
+  if (obj is Rule rule)
+  {
+    // Replace "path/to/your/rules.csv" with the actual path to your CSV file
+    var filePath = "appRules.csv";
+
+    // Read all lines from the CSV file
+    var allLines = File.ReadAllLines(filePath).ToList();
+
+    // Find the index of the line containing the matching rule (by Id)
+    var targetIndex = allLines.FindIndex(line => line.Split(',')[0] == rule.Id.ToString());
+
+    if (targetIndex != -1)
+    {
+      // Prepare the updated line data
+      var updatedLine = $"{rule.Id},{rule.Type},{rule.ListenOn},{rule.ListenPort},{rule.ConnectTo},{rule.ConnectPort},{rule.Comment ?? ""},{rule.Group ?? ""}";
+
+      // Replace the existing line with the updated line
+      allLines[targetIndex] = updatedLine;
+
+      // Write the updated lines back to the CSV file
+      File.WriteAllLines(filePath, allLines.ToArray());
+    }
+    else
+    {
+      // Handle case where no matching rule was found (optional: throw exception or log a message)
+      Console.WriteLine($"Rule with Id '{rule.Id}' not found in the CSV file for update.");
+    }
+  }
+  else
+  {
+    throw new NotSupportedException($"Updating {obj.GetType().FullName} is not supported.");
+  }
+}
+
+
         public void UpdateRange<T>(IEnumerable<T> objs) where T : class
         {
             foreach (var obj in objs) Update(obj);
