@@ -2,6 +2,7 @@
 using PortProxyGUI.Data;
 using PortProxyGUI.Utils;
 using System;
+using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -23,7 +24,7 @@ namespace PortProxyGUI
 
             InitializeComponent();
             Icon = Properties.Resources.icon;
-            Font = InterfaceUtil.UiFont;
+            Font = new(new FontFamily("Microsoft Sans Serif"), 8f);
 
             AutoTypeString = comboBox_Type.Text = comboBox_Type.Items.OfType<string>().First();
             var groupNames = (

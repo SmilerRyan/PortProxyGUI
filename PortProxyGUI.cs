@@ -4,6 +4,7 @@ using PortProxyGUI.UI;
 using PortProxyGUI.Utils;
 using System;
 using System.Data;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -23,7 +24,7 @@ namespace PortProxyGUI
         {
             InitializeComponent();
             Icon = Properties.Resources.icon;
-            Font = InterfaceUtil.UiFont;
+            Font = new(new FontFamily("Microsoft Sans Serif"), 8f);
 
             listViewProxies.ListViewItemSorter = lvwColumnSorter;
         }

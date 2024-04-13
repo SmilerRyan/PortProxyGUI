@@ -1,6 +1,7 @@
 ﻿using PortProxyGUI.Utils;
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace PortProxyGUI
@@ -15,7 +16,7 @@ namespace PortProxyGUI
 
             InitializeComponent();
             Icon = Properties.Resources.icon;
-            Font = InterfaceUtil.UiFont;
+            Font = new(new FontFamily("Microsoft Sans Serif"), 8f);
 
             label_version.Text = label_version.Text + "  v" + Application.ProductVersion;
         }
