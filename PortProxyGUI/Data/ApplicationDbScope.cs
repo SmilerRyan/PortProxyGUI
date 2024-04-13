@@ -1,5 +1,4 @@
 ﻿using NStandard;
-using SQLib.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,38 +11,9 @@ namespace PortProxyGUI.Data
         public static readonly string AppDbDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "PortProxyGUI");
         public static readonly string AppDbFile = Path.Combine(AppDbDirectory, "config.db");
 
-        public static ApplicationDbScope FromFile(string file)
-        {
-            var dir = Path.GetDirectoryName(file);
 
-            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-            if (!File.Exists(file))
-            {
-#if NETCOREAPP3_0_OR_GREATER
-#else
-                System.Data.SQLite.SQLiteConnection.CreateFile(file);
-#endif
-            }
 
-            var scope = new ApplicationDbScope($"Data Source=\"{file}\"");
-            scope.Migrate();
-            return scope;
-        }
 
-        public ApplicationDbScope(string connectionString) : base(connectionString)
-        {
-        }
-
-        public override void Initialize()
-        {
-        }
-
-        public void Migrate() => new MigrationUtil(this).MigrateToLast();
-
-        public Migration GetLastMigration()
-        {
-            return SqlQuery<Migration>($"SELECT * FROM __history ORDER BY MigrationId DESC LIMIT 1;").First();
-        }
 
         public IEnumerable<Rule> Rules
 {
