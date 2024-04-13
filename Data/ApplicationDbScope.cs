@@ -41,6 +41,15 @@ namespace PortProxyGUI.Data
 {
   get
   {
+
+	if (!File.Exists("appRules.csv"))
+	{
+		using (StreamWriter writer = File.CreateText("appRules.csv"))
+		{
+			writer.WriteLine("Id,Type,ListenOn,ListenPort,ConnectTo,ConnectPort,Comment,Group");
+		}
+	}
+	
     // Replace "path/to/your/rules.csv" with the actual path to your CSV file
     var lines = File.ReadAllLines("appRules.csv");
 

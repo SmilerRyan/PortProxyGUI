@@ -1,4 +1,3 @@
 To Do / To Fix
 - When adding a new rule the comment and group are not set (seem to be empty) however they can be modified later.
 - import and export of rules etc
-- if no rules.csv create one.
