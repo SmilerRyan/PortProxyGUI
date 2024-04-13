@@ -1,5 +1,2 @@
 To Do / To Fix
-- When adding a new rule the comment and group are not set (seem to be empty).
-  - They can be added later and do show and save to file as they should do
-  - After a app restart they dont show and get removed from the file
 - import and export of rules etc
