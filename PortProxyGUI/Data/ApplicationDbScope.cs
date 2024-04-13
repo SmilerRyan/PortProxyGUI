@@ -93,8 +93,13 @@ public Rule GetRule(string type, string listenOn, int listenPort)
             var newid = Guid.NewGuid().ToString();
             if (obj is Rule rule)
             {
-                Sql($"INSERT INTO Rules (Id, Type, ListenOn, ListenPort, ConnectTo, ConnectPort, Comment, `Group`) VALUES ({newid}, {rule.Type}, {rule.ListenOn}, {rule.ListenPort}, {rule.ConnectTo}, {rule.ConnectPort}, {rule.Comment ?? ""}, {rule.Group ?? ""});");
                 rule.Id = newid;
+
+                using (var writer = File.AppendText("appRules.csv"))
+                {
+                    writer.WriteLine($"{newid},{rule.Type},{rule.ListenOn},{rule.ListenPort},{rule.ConnectTo},{rule.ConnectPort},{rule.Comment ?? ""},{rule.Group ?? ""}");
+                }
+
             }
             else throw new NotSupportedException($"Adding {obj.GetType().FullName} is not supported.");
         }
