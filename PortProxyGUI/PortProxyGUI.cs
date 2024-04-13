@@ -379,18 +379,8 @@ namespace PortProxyGUI
             if (result == DialogResult.OK)
             {
                 var fileName = dialog.FileName;
-                using (var scope = ApplicationDbScope.FromFile(fileName))
-                {
-                    foreach (var rule in scope.Rules)
-                    {
-                        var exsist = Program.Database.GetRule(rule.Type, rule.ListenOn, rule.ListenPort);
-                        if (exsist is null)
-                        {
-                            rule.Id = Guid.NewGuid().ToString();
-                            Program.Database.Add(rule);
-                        }
-                    }
-                }
+                
+                MessageBox.Show(fileName);
 
                 RefreshProxyList();
             }

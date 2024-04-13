@@ -1,5 +1,4 @@
 ﻿using NStandard;
-using SQLib.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +6,7 @@ using System.Linq;
 
 namespace PortProxyGUI.Data
 {
-    public class ApplicationDbScope : SqliteScope<ApplicationDbScope>
+    public class ApplicationDbScope
     {
         public static readonly string AppDbDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "PortProxyGUI");
         public static readonly string AppDbFile = Path.Combine(AppDbDirectory, "config.db");
@@ -21,29 +20,22 @@ namespace PortProxyGUI.Data
             {
 #if NETCOREAPP3_0_OR_GREATER
 #else
-                System.Data.SQLite.SQLiteConnection.CreateFile(file);
 #endif
             }
 
             var scope = new ApplicationDbScope($"Data Source=\"{file}\"");
-            scope.Migrate();
             return scope;
         }
 
-        public ApplicationDbScope(string connectionString) : base(connectionString)
+        public ApplicationDbScope(string connectionString) : base()
         {
         }
 
-        public override void Initialize()
+        public void Initialize()
         {
         }
 
-        public void Migrate() => new MigrationUtil(this).MigrateToLast();
 
-        public Migration GetLastMigration()
-        {
-            return SqlQuery<Migration>($"SELECT * FROM __history ORDER BY MigrationId DESC LIMIT 1;").First();
-        }
 
         public IEnumerable<Rule> Rules
 {
@@ -217,5 +209,19 @@ public void Update<T>(T obj) where T : class
             File.WriteAllText("AppConfig.ini", $"MW_Width={appConfig.MainWindowSize.Width}\nMW_Height={appConfig.MainWindowSize.Height}\nPP_ColumnWidths={s_portProxyColumnWidths}\n");
         }
 
+        internal object SqlQuery(string v)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void UnsafeSql(string v)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void Sql(string v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
